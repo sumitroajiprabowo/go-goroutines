@@ -7,14 +7,20 @@ import (
 )
 
 func TestMap(t *testing.T) {
-	var data sync.Map
-	var addToMap = func(value int) {
+	data := &sync.Map{}
+	group := &sync.WaitGroup{}
+	addToMap := func(value int) {
+		defer group.Done()
+
+		group.Add(1)
 		data.Store(value, value)
 	}
 
 	for i := 0; i < 100; i++ {
 		go addToMap(i)
 	}
+
+	group.Wait()
 
 	data.Range(func(key, value interface{}) bool {
 		fmt.Println(key, ":", value)
